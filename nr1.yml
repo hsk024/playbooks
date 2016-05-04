@@ -1,0 +1,12 @@
+---
+- hosts: linuxclients
+  tasks:
+  - name: Whoami
+    become: yes
+    shell: /usr/bin/whoami >>/tmp/test.txt
+  - name: install check_mk agent
+    become: yes
+    yum: name=check-mk-agent.noarch state=present
+  - name: remove mailx
+    become: yes
+    yum: name=mailx.x86_64 state=absent
