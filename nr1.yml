@@ -10,4 +10,4 @@
   - name: remove mailx
     become: yes
     yum: name=mailx.x86_64 state=absent
-  -name: ansible install for pull
+  -name: ansible install for pulls
