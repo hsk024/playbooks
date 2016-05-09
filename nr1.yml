@@ -1,12 +1,47 @@
 ---
+# Sette opp ansible paa klienter for "pulling" av jobber
+# Kjoeres slik: "ansible-playbook nr1.yml --ask-sudo-pass"
 - hosts: linuxclients
+  become: yes
+ 
+  vars:
+    # File that ansible will use for logs
+    logfile: /var/log/ansible-pull.log
+
+    # Directory to where repository will be cloned
+    workdir: /var/lib/ansible/local
+
+    # Repository to check out -- YOU MUST CHANGE THIS
+    # repo must contain a local.yml file at top level
+    # repo_url: git://github.com/sfromm/ansible-playbooks.git
+    repo_url: 
+
   tasks:
-  - name: Whoami
-    become: yes
-    shell: /usr/bin/whoami >>/tmp/test.txt
-  - name: install check_mk agent
-    become: yes
-    yum: name=check-mk-agent.noarch state=present
-  - name: remove mailx
-    become: yes
-    yum: name=mailx.x86_64 state=absent
+
+  # Trenger vel ikke åette opp rpoxy allikevel - name: Sette opp proxy config yum.conf
+  #  lineinfile: dest=/etc/yum.conf line="proxy=http://www-proxy.helsenord.no:8080" 
+  #
+  - name: Laste ned epel repo til /tmp/t.rpm
+    environment: 
+      http_proxy: http://www-proxy.helsenord.no:8080
+    get_url: url=http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-6.noarch.rpm use_proxy=yes dest=/tmp/t.rpm
+  - name: Install repository epel fra /tmp/t.rpm
+    yum: name=/tmp/t.rpm state=present
+  - name: Slette rpm-fila /tmp/t.rpm
+    file: path=/tmp/t.rpm state=absent
+  - name: Install ansible
+    yum: name=ansible enablerepo=epel state=present
+
+  - name: Create local directory to work from
+    file: path={{workdir}} state=directory owner=root group=root mode=0751 
+
+  - name: Copy ansible inventory file to client
+    copy: src=/etc/ansible/hosts dest=/etc/ansible/hosts
+              owner=root group=root mode=0644
+
+  - name: Create crontab entry to clone/pull git repository
+    template: src=templates/etc_cron.d_ansible-pull.j2 dest=/etc/cron.d/ansible-pull owner=root group=root mode=0644
+
+  - name: Create logrotate entry for ansible-pull.log
+    template: src=templates/etc_logrotate.d_ansible-pull.j2 dest=/etc/logrotate.d/ansible-pull owner=root group=root mode=0644
+
