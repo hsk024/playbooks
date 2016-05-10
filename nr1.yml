@@ -5,6 +5,13 @@
   become: yes
  
   vars:
+
+    # schedule is fed directly to cron
+    schedule: '*/15 * * * *'
+
+    # User to run ansible-pull as from cron
+    cron_user: root
+
     # File that ansible will use for logs
     logfile: /var/log/ansible-pull.log
 
@@ -14,7 +21,7 @@
     # Repository to check out -- YOU MUST CHANGE THIS
     # repo must contain a local.yml file at top level
     # repo_url: git://github.com/sfromm/ansible-playbooks.git
-    repo_url: 
+    repo_url: http://github.com/hsk024/pullbook.git
 
   tasks:
 
@@ -44,4 +51,8 @@
 
   - name: Create logrotate entry for ansible-pull.log
     template: src=templates/etc_logrotate.d_ansible-pull.j2 dest=/etc/logrotate.d/ansible-pull owner=root group=root mode=0644
+
+  #ansible-pull bruker git:
+  - name: install git
+    yum: name=git state=present
 
