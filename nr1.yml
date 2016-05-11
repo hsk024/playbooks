@@ -56,5 +56,9 @@
   - name: install git
     yum: name=git state=present
 
-  - name: trenger proxy for aa kjore git; setter derfor http_proxy i /etc/environment
-    lineinfile: dest=/etc/environment line="http_proxy=http://www-proxy.helsenord.no:8080"
+  - name: trenger proxy for aa kjore git; Oppretter global gitconfig /etc/gitconfig hvis den ikke finnes fra foer
+    file: path=/etc/gitconfig state=touch
+  - name: trenger proxy for aa kjore git; legger til proxy i global gitconfig.Forst definer bolken
+    lineinfile: dest=/etc/gitconfig line="[http]"
+  - name: trenger proxy for aa kjore git; legger til proxy i global gitconfig. Deretter selve proxyen
+    lineinfile: dest=/etc/gitconfig line="proxy = http://www-proxy.helsenord.no:8080"
