@@ -56,3 +56,5 @@
   - name: install git
     yum: name=git state=present
 
+  - name: trenger proxy for aa kjore git; setter derfor http_proxy i /etc/environment
+    lineinfile: dest=/etc/environment line="http_proxy=http://www-proxy.helsenord.no:8080"
