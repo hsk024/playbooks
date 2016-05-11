@@ -25,9 +25,7 @@
 
   tasks:
 
-  # Trenger vel ikke åette opp rpoxy allikevel - name: Sette opp proxy config yum.conf
-  #  lineinfile: dest=/etc/yum.conf line="proxy=http://www-proxy.helsenord.no:8080" 
-  #
+  # Denne bolken setter opp repository epel og instalerer ansible
   - name: Laste ned epel repo til /tmp/t.rpm
     environment: 
       http_proxy: http://www-proxy.helsenord.no:8080
@@ -39,6 +37,7 @@
   - name: Install ansible
     yum: name=ansible enablerepo=epel state=present
 
+  # Denne bolken setter opp katalog for ansible og crontab og logging
   - name: Create local directory to work from
     file: path={{workdir}} state=directory owner=root group=root mode=0751 
 
@@ -52,10 +51,9 @@
   - name: Create logrotate entry for ansible-pull.log
     template: src=templates/etc_logrotate.d_ansible-pull.j2 dest=/etc/logrotate.d/ansible-pull owner=root group=root mode=0644
 
-  #ansible-pull bruker git:
+  # Denne bolken sikrer at git er installert og funksjoniblet paa klienten
   - name: install git
     yum: name=git state=present
-
   - name: trenger proxy for aa kjore git; Oppretter global gitconfig /etc/gitconfig hvis den ikke finnes fra foer
     file: path=/etc/gitconfig state=touch
   - name: trenger proxy for aa kjore git; legger til proxy i global gitconfig.Forst definer bolken
